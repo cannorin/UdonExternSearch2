@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ComVrchatWorldsDir>$(MSBuildProjectDirectory)\..\project\Packages\com.vrchat.worlds</ComVrchatWorldsDir>
+    <ScriptAssembliesDir>$(MSBuildProjectDirectory)\..\project\\Library\ScriptAssemblies</ScriptAssembliesDir>
+    <VRCSDKDir>$(ComVrchatWorldsDir)\Runtime\VRCSDK</VRCSDKDir>
+    <UdonRuntimeDir>$(ComVrchatWorldsDir)\Runtime\Udon\External</UdonRuntimeDir>
+    <UdonEditorDir>$(ComVrchatWorldsDir)\Editor\Udon\External</UdonEditorDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="UdonBase.fs" />
+    <Compile Include="Utils.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharpPlus" Version="1.4.0" />
+    <PackageReference Include="Thoth.Json.Net" Version="11.0.0" />
+    <PackageReference Include="Unity3D" Version="2.1.1" />
+    <Reference Include="$(VRCSDKDir)\Plugins\*.dll" />
+    <Reference Include="$(UdonRuntimeDir)\*.dll" />
+    <Reference Include="$(UdonEditorDir)\*.dll" />
+    <Reference Include="UnityEngine"><HintPath>$(UnityEnginePath)</HintPath></Reference>
+    <Reference Include="$(UnityManagedPath)\UnityEngine\*.dll" />
+    <Reference Include="$(ScriptAssembliesDir)\*.dll" />
+  </ItemGroup>
+
+</Project>

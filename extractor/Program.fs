@@ -19,7 +19,7 @@ type VpmPackage = {
 }
 
 type VpmManifest = {
-  dependencies: Map<string, VpmPackage>
+  locked: Map<string, VpmPackage>
 }
 
 let vrcsdk3Version =
@@ -28,7 +28,7 @@ let vrcsdk3Version =
     Decode.Auto.fromString<VpmManifest>(File.ReadAllText(vpmManifestPath))
   match vpmManifest with
   | Ok m ->
-    let package = m.dependencies |> Map.find "com.vrchat.worlds"
+    let package = m.locked |> Map.find "com.vrchat.worlds"
     package.version
   | Error _ -> "unknown"
 let udonsdkVersion = vrcsdk3Version

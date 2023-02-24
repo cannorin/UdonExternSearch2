@@ -14,24 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
-        
+
     - name: Restore .NET tools
       run: dotnet tool restore
-      
+
     - name: Get the latest VRCSDK
-      run: dotnet vpm add package com.vrchat.worlds -p project
-      
-    - name: Cache Unity project
-      uses: actions/cache@v3
+      run: |
+        dotnet vpm check project project
+        dotnet vpm add package com.vrchat.worlds -p project
+
+    - name: Restore Unity project
+      uses: actions/cache/restore@v3
       with:
         path: project/Library
         key: unityproject
-    
+
     - name: Build Unity project
       uses: game-ci/unity-builder@v2
       env:
@@ -39,10 +41,16 @@ jobs:
       with:
         projectPath: project
         targetPlatform: StandaloneWindows
-        
+
+    - name: Save Unity project
+      uses: actions/cache/save@v3
+      with:
+        path: project/Library
+        key: unityproject
+
     - name: Run extractor
-      run: dotnet run extractor/extractor.fsproj > /dev/null
-      
+      run: dotnet run --project extractor/extractor.fsproj > /dev/null
+
     - name: Upload the output
       uses: actions/upload-artifact@v3.1.2
       with:

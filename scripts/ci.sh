@@ -16,5 +16,5 @@ cd project && openupm add com.unity.cinemachine@2.8.0
 unity-editor -nographics -projectPath ./project -buildWindowsPlayer /dev/null -logfile
 
 # Run extractor
-dotnet build --project extractor/extractor.fsproj
+dotnet build extractor/extractor.fsproj
 dotnet run --project extractor/extractor.fsproj > /dev/null

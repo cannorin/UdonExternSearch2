@@ -3,8 +3,8 @@ unity-editor -nographics -manualLicenseFile Unity.ulf -logfile
 
 # Run vpm to install the latest VRC SDK
 dotnet tool restore
-cp vcc-settings.json /root/.local/share/VRChatCreatorCompanion/settings.json
 dotnet vpm install templates
+cp vcc-settings.json /root/.local/share/VRChatCreatorCompanion/settings.json
 dotnet vpm new project World -p .
 dotnet vpm add package com.vrchat.worlds -p project
 

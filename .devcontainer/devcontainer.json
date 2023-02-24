@@ -7,14 +7,12 @@
 	"features": {
 		"ghcr.io/devcontainers/features/dotnet:1": { "version": "6" },
 		"ghcr.io/devcontainers/features/node:1": { "version": "16" }
-	},
+	}
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "bash scripts/post_install.sh"
-
 	// Configure tool-specific properties.
 	// "customizations": {},
 

@@ -37,9 +37,7 @@ jobs:
     - name: Enter the devcontainer and perform build
       uses: devcontainers/ci@v0.3
       with:
-        imageName: ghcr.io/cannorin/UdonExternSearch2
-        runCmd: |
-          bash scripts/ci.sh
+        runCmd: bash scripts/ci.sh
 
     - name: Save Unity project
       uses: actions/cache/save@v3

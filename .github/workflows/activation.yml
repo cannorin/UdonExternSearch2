@@ -1,4 +1,4 @@
-2019.4.31f1name: Acquire activation file
+name: Acquire activation file
 on:
   workflow_dispatch: {}
 jobs:

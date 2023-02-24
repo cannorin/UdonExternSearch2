@@ -10,7 +10,7 @@ dotnet vpm add package com.vrchat.worlds -p project
 
 # Run openupm-cli to install Cinemachine
 npm install -g openupm-cli
-cd project && openupm add com.unity.cinemachine@2.8.0
+cd project; openupm add com.unity.cinemachine@2.8.0; cd ../
 
 # Build unity project
 unity-editor -nographics -projectPath ./project -buildWindowsPlayer /dev/null -logfile

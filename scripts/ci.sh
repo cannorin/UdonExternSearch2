@@ -5,6 +5,7 @@ unity-editor -nographics -manualLicenseFile Unity.ulf -logfile
 dotnet tool restore
 cp vcc-settings.json /root/.local/share/VRChatCreatorCompanion/settings.json
 dotnet vpm install templates
+dotnet vpm new project World -p .
 dotnet vpm add package com.vrchat.worlds -p project
 
 # Build unity project

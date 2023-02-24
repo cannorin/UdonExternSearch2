@@ -1,7 +1,22 @@
 {
-	"dependencies" : {
-		"com.vrchat.clientsim" : {
-			"version" : "1.2.x"
-		}
-	}
+  "dependencies": {
+    "com.vrchat.clientsim": {
+      "version": "1.2.x"
+    },
+    "com.vrchat.worlds": {
+      "version": "3.1.11"
+    }
+  },
+  "locked": {
+    "com.vrchat.worlds": {
+      "version": "3.1.11",
+      "dependencies": {
+        "com.vrchat.base": "3.1.11"
+      }
+    },
+    "com.vrchat.base": {
+      "version": "3.1.11",
+      "dependencies": {}
+    }
+  }
 }

@@ -25,6 +25,7 @@ jobs:
 
     - name: Get the latest VRCSDK
       run: |
+        dotnet vpm install templates
         dotnet vpm check project ./project
         dotnet vpm add package com.vrchat.worlds -p ./project
 

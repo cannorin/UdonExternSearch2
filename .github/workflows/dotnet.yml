@@ -1,0 +1,52 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+        
+    - name: Restore .NET tools
+      run: dotnet tool restore
+      
+    - name: Get the latest VRCSDK
+      run: dotnet vpm add package com.vrchat.worlds -p project
+      
+    - name: Cache Unity project
+      uses: actions/cache@v3
+      with:
+        path: project/Library
+        key: unityproject
+    
+    - name: Build Unity project
+      uses: game-ci/unity-builder@v2
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      with:
+        projectPath: project
+        targetPlatform: StandaloneWindows
+        
+    - name: Run extractor
+      run: dotnet run extractor/extractor.fsproj > /dev/null
+      
+    - name: Upload the output
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        # Artifact name
+        name: udon_info
+        # A file, directory or wildcard pattern that describes what to upload
+        path: udon_info.json

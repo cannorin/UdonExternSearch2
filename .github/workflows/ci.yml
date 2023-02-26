@@ -26,8 +26,7 @@ jobs:
     - name: Get the latest VRCSDK
       run: |
         dotnet vpm check project ./project
-        dotnet vpm add package com.vrchat.clientsim -p ./project
-        dotnet vpm add package com.vrchat.worlds -p ./project
+        bash scripts/restore_vpm_packages.sh
 
     - name: Restore Unity project
       uses: actions/cache/restore@v3
@@ -42,6 +41,7 @@ jobs:
       with:
         projectPath: project
         targetPlatform: StandaloneWindows
+        allowDirtyBuild: true
 
     - name: Save Unity project
       uses: actions/cache/save@v3

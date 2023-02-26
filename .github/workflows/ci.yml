@@ -15,35 +15,44 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
       with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        dotnet-version: 6.0.x
+
+    - name: Restore .NET tools
+      run: dotnet tool restore
+
+    - name: Get the latest VRCSDK
+      run: |
+        dotnet vpm check project ./project
+        dotnet vpm add package com.vrchat.clientsim -p ./project
+        dotnet vpm add package com.vrchat.worlds -p ./project
 
     - name: Restore Unity project
       uses: actions/cache/restore@v3
       with:
         path: project/Library
-        key: unity-project
+        key: unityproject
 
-    - name: Write Unity license to file
-      run: echo $DEV_ENV_FILE >> Unity.ulf
-      shell: bash
+    - name: Build Unity project
+      uses: game-ci/unity-builder@v2
       env:
-        UNITY_LICENSE_FILE : ${{ secrets.UNITY_LICENSE }}
-
-    - name: Enter the devcontainer and perform build
-      uses: devcontainers/ci@v0.3
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
       with:
-        runCmd: bash scripts/ci.sh
+        projectPath: project
+        targetPlatform: StandaloneWindows
 
     - name: Save Unity project
       uses: actions/cache/save@v3
       with:
         path: project/Library
-        key: unity-project
+        key: unityproject
+
+    - name: Run extractor
+      run: |
+        dotnet build --project extractor/extractor.fsproj
+        dotnet run --project extractor/extractor.fsproj > /dev/null
 
     - name: Upload the output
       uses: actions/upload-artifact@v3.1.2

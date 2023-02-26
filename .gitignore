@@ -199,8 +199,6 @@ FakesAssemblies/
 
 Udon/*.dll*
 Udon/*.pdb*
-Assets/
-!Assets/INSTALL.md
 .output/
 udon_extern.json
 

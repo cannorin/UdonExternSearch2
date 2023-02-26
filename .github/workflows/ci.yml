@@ -50,7 +50,7 @@ jobs:
 
     - name: Run extractor
       run: |
-        dotnet build --project extractor/extractor.fsproj
+        dotnet build extractor/extractor.fsproj
         dotnet run --project extractor/extractor.fsproj > /dev/null
 
     - name: Upload the output

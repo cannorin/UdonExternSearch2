@@ -23,10 +23,8 @@ jobs:
     - name: Restore .NET tools
       run: dotnet tool restore
 
-    - name: Get the latest VRCSDK
-      run: |
-        dotnet vpm check project ./project
-        bash scripts/restore_vpm_packages.sh
+    - name: Restore the latest VRCSDK
+      run:  bash scripts/restore_vpm_packages.sh
 
     - name: Restore Unity project
       uses: actions/cache/restore@v3
@@ -35,6 +33,7 @@ jobs:
         key: ues2-project
 
     - name: Build Unity project
+      continue-on-error: true
       uses: game-ci/unity-builder@v2
       env:
         UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}

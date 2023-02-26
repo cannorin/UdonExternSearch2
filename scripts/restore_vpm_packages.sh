@@ -3,6 +3,8 @@
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 cd $SCRIPT_DIR/../
 
+dotnet vpm check project ./project
+
 rm project/Packages/com.vrchat.core.vpm-resolver/package.json
 dotnet vpm add package com.vrchat.core.vpm-resolver -p project
 

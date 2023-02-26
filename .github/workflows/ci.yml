@@ -33,7 +33,7 @@ jobs:
       uses: actions/cache/restore@v3
       with:
         path: project/Library
-        key: unityproject
+        key: ues2-project
 
     - name: Build Unity project
       uses: game-ci/unity-builder@v2
@@ -47,7 +47,7 @@ jobs:
       uses: actions/cache/save@v3
       with:
         path: project/Library
-        key: unityproject
+        key: ues2-project
 
     - name: Run extractor
       run: |

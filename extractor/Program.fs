@@ -2,7 +2,6 @@
 open System.IO
 open Thoth.Json.Net
 open UdonBase
-open Utils
 
 let charCoder =
   Extra.empty
@@ -31,26 +30,17 @@ let vrcsdk3Version =
     let package = m.locked |> Map.find "com.vrchat.worlds"
     package.version
   | Error _ -> "unknown"
-let udonsdkVersion = vrcsdk3Version
 
 [<EntryPoint>]
 let main (argv: string[]) =
-  printfn "SDK version: %s" vrcsdk3Version
+  printfn "* SDK version: %s" vrcsdk3Version
 
-  let types =
-    let xs =
-      UdonType.getAllSupported ()
-      |> Seq.distinctBy fst
-    UdonType.createTyperMap xs
+  printfn "* Analyzing SDK."
+  let info = Extract.createUdonInfo vrcsdk3Version
 
-  let externs = GraphNode.createExternMap types
-
-  let info = { Externs = externs; Types = types; VRCSDK3Version = vrcsdk3Version; UDONSDKVersion = udonsdkVersion }
-
-  let encode x =
-    Encode.Auto.toString(x, extra=charCoder, skipNullField=true)
-
-  let infoJson = encode info
+  printfn "* Encoding data in JSON."
+  let infoJson =
+    Encode.Auto.toString(info, extra=charCoder, skipNullField=true)
 
   let targetDir =
     if argv.Length = 0 then Environment.CurrentDirectory
@@ -65,8 +55,11 @@ let main (argv: string[]) =
          | _ -> failwithf "error: directory '%s' does not exist" argv.[0]
 
   let write fileName json =
+    printfn "* Creating '%s/%s'." targetDir fileName
     let path = Path.Combine(targetDir, fileName)
     File.WriteAllText (path, json)
 
-  write "udon_info.json" infoJson
+  write "udonInfo.json" infoJson
+
+  printfn "* Complete."
   0

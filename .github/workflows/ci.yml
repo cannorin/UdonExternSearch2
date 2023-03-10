@@ -26,37 +26,15 @@ jobs:
     - name: Restore the latest VRCSDK
       run:  bash scripts/restore_vpm_packages.sh
 
-    - name: Restore Unity project
-      uses: actions/cache/restore@v3
-      with:
-        path: project/Library
-        key: ues2-project
-
-    - name: Build Unity project
-      continue-on-error: true
-      uses: game-ci/unity-builder@v2
-      env:
-        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-      with:
-        projectPath: project
-        targetPlatform: StandaloneWindows
-        allowDirtyBuild: true
-
-    - name: Save Unity project
-      uses: actions/cache/save@v3
-      with:
-        path: project/Library
-        key: ues2-project
-
     - name: Run extractor
       run: |
         dotnet build extractor/extractor.fsproj
-        dotnet run --project extractor/extractor.fsproj > /dev/null
+        dotnet run --project extractor/extractor.fsproj
 
     - name: Upload the output
       uses: actions/upload-artifact@v3.1.2
       with:
         # Artifact name
-        name: udon_info
+        name: udonInfo
         # A file, directory or wildcard pattern that describes what to upload
-        path: udon_info.json
+        path: udonInfo.json

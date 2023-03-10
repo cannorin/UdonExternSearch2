@@ -203,4 +203,4 @@ Udon/*.pdb*
 udon_extern.json
 
 .fake
-udon_*.json
+udonInfo.json

@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <UnityVersion>2019.4.31f1</UnityVersion>
-    <UnityVersionInstallPath>/opt/unity</UnityVersionInstallPath>
-  </PropertyGroup>
-</Project>

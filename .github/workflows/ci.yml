@@ -42,6 +42,10 @@ jobs:
         dotnet restore
         dotnet tool restore
 
+    - name: Yarn install
+      working-directory: ./webapp
+      run:  yarn install
+
     - name: Restore the latest VRCSDK
       run:  bash scripts/restore_vpm_packages.sh
 
@@ -51,16 +55,13 @@ jobs:
         dotnet run --project extractor/extractor.fsproj
 
     - name: Copy udonInfo.json.gz
-      uses: canastro/copy-file-action@master
-      with:
-        source: "./udonInfo.json.gz"
-        target: "./webapp/static/assets/udonInfo.json.gz"
+      run: |
+        cp ./udonInfo.json.gz ./webapp/static/assets/udonInfo.json.gz
+        ls ./webapp/static/assets
 
     - name: Build webapp
       working-directory: ./webapp
-      run: |
-        yarn install
-        dotnet fable src --run webpack --mode production
+      run:  dotnet fable src --run webpack --mode production
 
     - name: Push artifact to gh-pages
       if: success() && github.event_name == 'push'

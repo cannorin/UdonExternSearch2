@@ -82,7 +82,7 @@ let private viewExtern (info: UdonExternDefinition) =
     | UdonExternKind.Static, true  -> "Static generic function"
     | UdonExternKind.Static, false -> "Static function"
     | UdonExternKind.Instance, true  -> "Instance generic function"
-    | UdonExternKind.Instance, false -> "Generic function"
+    | UdonExternKind.Instance, false -> "Instance function"
     | UdonExternKind.Constructor, _ -> "Constructor"
     | UdonExternKind.Unknown, _ -> "Unknown"
 
@@ -124,9 +124,9 @@ let private viewExtern (info: UdonExternDefinition) =
       ]
     ]
 
-    h6 [] [str ".NET Equivalent:"]
     match info.DotNetFullName with
     | Some dfn ->
+      h6 [] [str ".NET Equivalent:"]
       code [Style [Display DisplayOptions.Block; Width "100%"]] [str dfn]
     | None -> null
   ]

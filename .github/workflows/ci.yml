@@ -61,7 +61,9 @@ jobs:
 
     - name: Build webapp
       working-directory: ./webapp
-      run: dotnet fable src --run webpack
+      run: |
+        dotnet build src/App.fsproj
+        dotnet fable src --run webpack
 
     - name: Push artifact to gh-pages
       if: success() && github.event_name == 'push'

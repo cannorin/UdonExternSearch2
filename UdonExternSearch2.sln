@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "extractor", "extractor\extractor.fsproj", "{B00A76E1-2D86-4540-AC45-E0969AB5C8B6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "webapp", "webapp", "{41863C97-CEE7-41DE-8E3E-3865F957283D}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "App", "webapp\src\App.fsproj", "{987BD6A4-13E8-491C-B10A-A21762321215}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B00A76E1-2D86-4540-AC45-E0969AB5C8B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B00A76E1-2D86-4540-AC45-E0969AB5C8B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B00A76E1-2D86-4540-AC45-E0969AB5C8B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B00A76E1-2D86-4540-AC45-E0969AB5C8B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{987BD6A4-13E8-491C-B10A-A21762321215}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{987BD6A4-13E8-491C-B10A-A21762321215}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{987BD6A4-13E8-491C-B10A-A21762321215}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{987BD6A4-13E8-491C-B10A-A21762321215}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{987BD6A4-13E8-491C-B10A-A21762321215} = {41863C97-CEE7-41DE-8E3E-3865F957283D}
+	EndGlobalSection
+EndGlobal

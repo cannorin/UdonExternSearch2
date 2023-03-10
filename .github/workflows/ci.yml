@@ -20,8 +20,10 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
-    - name: Restore .NET tools
-      run: dotnet tool restore
+    - name: Restore .NET packages and tools
+      run: |
+        dotnet restore
+        dotnet tool restore
 
     - name: Restore the latest VRCSDK
       run:  bash scripts/restore_vpm_packages.sh
@@ -31,10 +33,16 @@ jobs:
         dotnet build extractor/extractor.fsproj
         dotnet run --project extractor/extractor.fsproj
 
-    - name: Upload the output
-      uses: actions/upload-artifact@v3.1.2
+    - name: Build webapp
+      working-directory: ./webapp
+      run: |
+        yarn install
+        dotnet fable src && yarn webpack --mode production
+
+    - name: Push artifact to gh-pages
+      if: success() && github.event_name == 'push'
+      uses: crazy-max/ghaction-github-pages@v2.4.1
       with:
-        # Artifact name
-        name: udonInfo
-        # A file, directory or wildcard pattern that describes what to upload
-        path: udonInfo.json*
+        build_dir: webapp/output
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

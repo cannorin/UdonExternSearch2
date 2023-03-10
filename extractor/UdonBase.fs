@@ -7,41 +7,18 @@ type [<RequireQualifiedAccess>] UdonTypeKind =
   | GenericParameterList
   | Unknown
 
-type UdonType = {
-  Name: string
-  Kind: UdonTypeKind
-}
-
-module UdonType =
-  let parse = function
-    | "T" -> { Name = "T"; Kind = UdonTypeKind.GenericParameter }
-    | "TArray" -> { Name = "TArray"; Kind = UdonTypeKind.GenericParameterArray }
-    | "ListT" -> { Name = "ListT"; Kind = UdonTypeKind.GenericParameterList }
-    | s ->
-      let kind =
-        if isNull s then UdonTypeKind.Unknown
-        else UdonTypeKind.UdonTypeName
-      { Name = s; Kind = kind }
-
 type [<RequireQualifiedAccess>] UdonExternKind = Static | Instance | Constructor | Unknown
 
-type UdonExternType<'T> = {
+type UdonExternType = {
   Kind: UdonExternKind
   Arity: int
+  ThisType: string option
   GenericParameters: string[]
-  Parameters: 'T[]
-  ReturnType: 'T option
+  Parameters: string[]
+  ReturnType: string option
 }
 
 module UdonExternType =
-  let map f (et: UdonExternType<_>) =
-    {
-      Kind = et.Kind; Arity = et.Arity
-      GenericParameters = et.GenericParameters
-      Parameters = et.Parameters |> Array.map f
-      ReturnType = et.ReturnType |> Option.map f
-    }
-
   let safeSplitSignature (s: string) =
     let knownPrefix = [
       "TMProTMP"; "VRCSDKBaseVRC";
@@ -52,10 +29,11 @@ module UdonExternType =
     |> Seq.map (fun s -> knownPrefix |> List.fold (fun (s: string) prefix -> s.Replace($"{prefix}-", $"{prefix}_")) s)
     |> Seq.toArray
 
-  let parse (signature: string) arity =
+  let parse thisType (signature: string) arity =
     let (|Args|) = safeSplitSignature
     let baseObj = {
       Kind = UdonExternKind.Unknown; Arity = arity
+      ThisType = None
       GenericParameters = [||]
       Parameters = [||]
       ReturnType = None
@@ -65,11 +43,11 @@ module UdonExternType =
     let StaticFunc (args, ret) =
       { baseObj with Kind = UdonExternKind.Static; Parameters = args; ReturnType = ret }
     let InstanceFunc (args, ret) =
-      { baseObj with Kind = UdonExternKind.Instance; Parameters = args; ReturnType = ret }
+      { baseObj with ThisType = Some thisType; Kind = UdonExternKind.Instance; Parameters = args; ReturnType = ret }
     let StaticGenericFunc (tyargs, args, ret) =
       { baseObj with Kind = UdonExternKind.Static; GenericParameters = tyargs; Parameters = args; ReturnType = ret }
     let InstanceGenericFunc (tyargs, args, ret) =
-      { baseObj with Kind = UdonExternKind.Instance; GenericParameters = tyargs; Parameters = args; ReturnType = ret }
+      { baseObj with ThisType = Some thisType; Kind = UdonExternKind.Instance; GenericParameters = tyargs; Parameters = args; ReturnType = ret }
 
     let StaticVoidRetArgFunc = StaticFunc (Array.empty, None)
     let inline StaticVoidRetFunc xs = StaticFunc (xs, None)
@@ -111,52 +89,26 @@ module UdonExternType =
       | _ -> name, baseObj
 
 type UdonTypeInfo = {
-  Name: string option
-  FullName: string option
-  Namespace: string option
-  IsValueType: bool
-  IsPrimitive: bool
-  IsArray: bool
-  ElementType: UdonTypeInfo option
-  IsGenericTypeParameter: bool
-  IsGenericType: bool
-  ContainsGenericParameters: bool
-  GenericTypeArguments: UdonTypeInfo[]
-  IsNested: bool
-  DeclaringType: UdonTypeInfo option
-}
-
-type UdonParameterInfo = {
-  Type: UdonTypeInfo
-  IsOptional: bool
-  IsIn: bool
-  IsOut: bool
-}
-
-type UdonMemberInfo = {
   Name: string
-  FullName: string
-  DeclaringType: UdonTypeInfo
-  IsMethod: bool
-  IsProperty: bool
-  IsField: bool
-  Parameters: UdonParameterInfo[]
-  Type: UdonTypeInfo
-  GenericArguments: UdonTypeInfo[]
-  GenericParameters: UdonTypeInfo[]
+  FullName: string option
+  UdonTypeName: string option
+  Namespace: string option
+  ElementType: string option
+  GenericTypeArguments: string[] option
+  DeclaringType: string option
+  IsSpecial: bool option
 }
 
 type UdonExternDefinition = {
   Name: string
-  UdonTypeName: string
-  Type: UdonExternType<UdonType>
-  MemberInfo: UdonMemberInfo option
+  Signature: string
+  DotNetFullName: string option
+  Type: UdonExternType
 }
 
 type UdonInfo = {
   SdkVersion: string
   UdonTypeNameToFullName: Map<string, string>
-  FullNameToUdonTypeName: Map<string, string>
   FullNameToTypeInfo: Map<string, UdonTypeInfo>
-  SignatureToExterns: Map<string, UdonExternDefinition>
+  UdonTypeNameToExterns: Map<string, UdonExternDefinition[]>
 }

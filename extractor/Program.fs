@@ -1,7 +1,8 @@
 ﻿open System
 open System.IO
+open System.IO.Compression
+open FSharpPlus
 open Thoth.Json.Net
-open UdonBase
 
 let charCoder =
   Extra.empty
@@ -58,6 +59,13 @@ let main (argv: string[]) =
     printfn "* Creating '%s/%s'." targetDir fileName
     let path = Path.Combine(targetDir, fileName)
     File.WriteAllText (path, json)
+
+    printfn "* Creating '%s/%s.gz'." targetDir fileName
+    let pathGZ = Path.ChangeExtension(path, Path.GetExtension(path) + ".gz")
+    use writeStream = File.OpenWrite(pathGZ)
+    use gzStream = new GZipStream(writeStream, CompressionMode.Compress)
+    use writer = new StreamWriter(gzStream)
+    writer.Write(json)
 
   write "udonInfo.json" infoJson
 

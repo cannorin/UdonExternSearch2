@@ -142,35 +142,64 @@ let getParameterCounts (td: TypeDefinition) =
     | [] -> List.rev acc
   read [] il
 
+let typeMap =
+  printfn "  - Gathering types."
+  let tmp = typeResolvers |> List.fold getTypeMapFromTypeDefinition Map.empty
+  typeDefinitions |> Array.fold getTypeMapFromExternClasses tmp
+
 let getNameOfTypeDefinition (td: TypeDefinition) =
   let getName = td.Methods |> Seq.find (fun m -> m.Name = "get_Name")
   getName.Body.Instructions
-  |> Seq.pick (function
-    | CecilOp OpCodes.Ldstr (:? string as value) -> Some value
+  |> Seq.tryPick (function
+    | CecilOp OpCodes.Ldstr (:? string as value)
+      when typeMap |> Map.containsKey value -> Some value
     | _ -> None)
+  |> Option.defaultWith (fun () -> failwithf "module '%s' does not have a corresponding Udon type." td.FullName)
 
-let nameOfTypeDefinition =
+let udonTypeNameOfTypeDefinition =
   typeDefinitions
   |> Seq.map (fun td -> td.FullName, getNameOfTypeDefinition td)
   |> Map.ofSeq
 
-let rec getUdonTypeInfo (t: TypeReference) =
+let u2f =
+  typeMap |> Map.map (fun _ value -> value.FullName)
+
+let f2u =
+  typeMap
+  |> Map.toSeq
+  |> Seq.map (fun (key, value) -> value.FullName, key)
+  |> Seq.distinctBy fst
+  |> Map.ofSeq
+
+let rec getUdonTypeInfo (udonTypeName: string option) (t: TypeReference) =
   let tyargs =
     if t.IsGenericInstance then
       (t :?> GenericInstanceType).GenericArguments |> Seq.toArray
     else Array.empty
-  {
-    Name = Option.ofObj t.Name; FullName = Option.ofObj t.FullName;
-    Namespace = Option.ofObj t.Namespace;
-    IsValueType = t.IsValueType; IsPrimitive = t.IsPrimitive
-    IsArray = t.IsArray;
-    ElementType = t.GetElementType() |> Option.ofObj |> Option.filter (fun u -> t.Name <> u.Name) |> Option.map getUdonTypeInfo
-    IsGenericTypeParameter = t.IsGenericParameter
-    IsGenericType = (t.ContainsGenericParameter && not t.IsGenericParameter) || t.IsGenericInstance
-    ContainsGenericParameters = t.ContainsGenericParameter
-    GenericTypeArguments = tyargs |> Array.map getUdonTypeInfo
-    IsNested = t.IsNested
-    DeclaringType = t.DeclaringType |> Option.ofObj |> Option.filter (fun u -> t.Name <> u.Name) |> Option.map getUdonTypeInfo
+  let elemType = t.GetElementType() |> Option.ofObj |> Option.filter (fun u -> t.Name <> u.Name)
+  let declType = t.DeclaringType |> Option.ofObj |> Option.filter (fun u -> t.Name <> u.Name)
+
+  let self = {
+    Name = t.Name; FullName = Some t.FullName; UdonTypeName = udonTypeName
+    Namespace =
+      if System.String.IsNullOrEmpty t.Namespace then None
+      else Some t.Namespace;
+    ElementType = elemType |> Option.bind (fun u -> Option.ofObj u.FullName)
+    GenericTypeArguments =
+      let tyargs = tyargs |> Array.map (fun u -> u.FullName)
+      if Array.isEmpty tyargs then None else Some tyargs
+    DeclaringType = declType |> Option.bind (fun u -> Option.ofObj u.FullName)
+    IsSpecial = None
+  }
+
+  seq {
+    yield self
+    match elemType with
+    | Some u -> yield! getUdonTypeInfo (f2u |> Map.tryFind u.FullName) u
+    | None -> ()
+    match declType with
+    | Some u -> yield! getUdonTypeInfo (f2u |> Map.tryFind u.FullName) u
+    | None -> ()
   }
 
 let tryGetActualMethod (signature: string) (name: string) (m: MethodDefinition) =
@@ -194,63 +223,57 @@ let tryGetActualMethod (signature: string) (name: string) (m: MethodDefinition) 
     | _ -> None
   m.Body.Instructions |> Seq.tryPick picker
 
-let getUdonParameterInfo (p: ParameterDefinition) =
-  {
-    Type = getUdonTypeInfo p.ParameterType
-    IsOptional = p.IsOptional
-    IsIn = p.IsIn; IsOut = p.IsOut
-  }
-
-let getUdonMemberInfo (m: CecilMember) =
-  {
-    Name = m.name; FullName = m.fullname
-    DeclaringType = m.declType |> getUdonTypeInfo
-    IsMethod = m.kind = CecilMemberKind.Method
-    IsProperty = m.kind = CecilMemberKind.Property
-    IsField = m.kind = CecilMemberKind.Field
-    Parameters = m.prms |> Array.map getUdonParameterInfo
-    Type = m.ty |> getUdonTypeInfo
-    GenericArguments = m.tyargs |> Array.map getUdonTypeInfo
-    GenericParameters = m.typrms |> Array.map getUdonTypeInfo
-  }
-
 let getExternDefinition (td: TypeDefinition, signature: string, arity: int) =
   let md = td.Methods |> Seq.find (fun m -> m.Name = signature)
-  let name, ty = UdonExternType.parse signature arity
+  let udonTypeName = udonTypeNameOfTypeDefinition |> Map.find td.FullName
+  let name, ty = UdonExternType.parse udonTypeName signature arity
   let mi = tryGetActualMethod signature name md
-  signature,
-  {
-    Name = name; UdonTypeName = nameOfTypeDefinition |> Map.find td.FullName
-    Type = ty |> UdonExternType.map UdonType.parse; MemberInfo = mi |> Option.map getUdonMemberInfo
+  udonTypeName, {
+    Name = name
+    Signature = $"{udonTypeName}.{signature}"
+    DotNetFullName = mi |> Option.map (fun m -> m.fullname)
+    Type = ty
   }
 
 let createUdonInfo sdkVersion =
-  printfn "  - Gathering types."
-  let typeMap =
-    let tmp = typeResolvers |> List.fold getTypeMapFromTypeDefinition Map.empty
-    typeDefinitions |> Array.fold getTypeMapFromExternClasses tmp
-
-  let u2f =
-    typeMap |> Map.map (fun _ value -> value.FullName)
-  let f2u =
-    typeMap
-    |> Map.toSeq
-    |> Seq.map (fun (key, value) -> value.FullName, key)
-    |> Map.ofSeq
-
   printfn "  - Gathering type information."
   let f2t =
-    f2u |> Map.map (fun _ value -> typeMap |> Map.find value |> getUdonTypeInfo)
+    f2u
+    |> Map.values
+    |> Seq.collect (fun value -> typeMap |> Map.find value |> getUdonTypeInfo (Some value))
+    |> Seq.distinctBy (fun t -> t.FullName)
+    |> Seq.choose (fun t -> t.FullName |> Option.map (fun fn -> fn, t))
+    |> Map.ofSeq
 
   printfn "  - Gathering externs."
-  let s2e =
+  let u2e =
     typeDefinitions
     |> Seq.collect getParameterCounts
     |> Seq.map getExternDefinition
+    |> Seq.groupBy fst
+    |> Seq.map (fun (k, v) -> k, v |> Seq.map snd |> Array.ofSeq)
     |> Map.ofSeq
+
+  let mkSpecial name : UdonTypeInfo = {
+    Name = name; FullName = None; UdonTypeName = Some name;
+    Namespace = None; ElementType = None; GenericTypeArguments = None; DeclaringType = None;
+    IsSpecial = Some true
+  }
 
   {
     SdkVersion = sdkVersion
-    UdonTypeNameToFullName = u2f; FullNameToUdonTypeName = f2u
-    FullNameToTypeInfo = f2t; SignatureToExterns = s2e
+
+    UdonTypeNameToFullName =
+      u2f
+      |> Map.add "T" "T"
+      |> Map.add "TArray" "TArray"
+      |> Map.add "ListT" "ListT"
+
+    FullNameToTypeInfo =
+      f2t
+      |> Map.add "T"      (mkSpecial "T")
+      |> Map.add "TArray" { mkSpecial "TArray" with ElementType = Some "T" }
+      |> Map.add "ListT"  { mkSpecial "ListT" with GenericTypeArguments = Some [|"T"|] }
+
+    UdonTypeNameToExterns = u2e
   }

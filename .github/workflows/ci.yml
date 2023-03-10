@@ -38,6 +38,7 @@ jobs:
       run: |
         yarn install
         dotnet fable src && yarn webpack --mode production
+        cp udonInfo.json.gz webapp/static/assets/udonInfo.json.gz
 
     - name: Push artifact to gh-pages
       if: success() && github.event_name == 'push'

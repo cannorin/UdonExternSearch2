@@ -9,6 +9,7 @@
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.0" />
     <PackageReference Include="Fable.Browser.Dom" Version="2.3.0" />
     <PackageReference Include="Fable.Browser.MediaQueryList" Version="1.1.1" />
     <PackageReference Include="Fable.Browser.Navigator" Version="1.3.0" />

@@ -8,6 +8,8 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  schedule:
+    - cron:  '0 15 * * 6'
 
 jobs:
   build:
@@ -56,7 +58,7 @@ jobs:
         dotnet fable src --run webpack
 
     - name: Push artifact to gh-pages
-      if: success() && github.event_name == 'push'
+      if: success() && github.ref_name == 'main'
       uses: crazy-max/ghaction-github-pages@v2.4.1
       with:
         build_dir: webapp/output

@@ -1,10 +1,5 @@
 {
   "private": true,
-  "scripts": {
-    "postinstall": "dotnet tool restore",
-    "start": "dotnet fable watch src --run webpack-dev-server",
-    "build": "dotnet fable src && webpack"
-  },
   "dependencies": {
     "@babel/core": "^7.13.10",
     "@babel/plugin-external-helpers": "^7.8.3",

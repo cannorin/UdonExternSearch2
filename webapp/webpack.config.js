@@ -21,7 +21,7 @@ module.exports = (env, options) => {
     if (options.mode === undefined)
         options.mode = "development";
 
-    var isProduction = options.mode === "production";
+    var isProduction = !process.argv.find(v => v.indexOf('serve') !== -1);
     console.log("Bundling for " + (isProduction ? "production" : "development") + "...");
 
     return {

@@ -1,13 +1,13 @@
 module UdonBase
 
-type [<RequireQualifiedAccess>] UdonTypeKind =
+type UdonTypeKind =
   | UdonTypeName
   | GenericParameter
   | GenericParameterArray
   | GenericParameterList
   | Unknown
 
-type [<RequireQualifiedAccess>] UdonExternKind = Static | Instance | Constructor | Unknown
+type UdonExternKind = Static | Instance | Constructor | Unknown
 
 type UdonExternType = {
   Kind: UdonExternKind

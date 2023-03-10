@@ -24,18 +24,8 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 18
-
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      run: echo "dir=$(yarn config get cacheFolder)" >>"$GITHUB_OUTPUT"
-
-    - name: Retrieve yarn cache
-      uses: actions/cache@v3
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('webapp/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
+        cache: yarn
+        cache-dependency-path: webapp/yarn.lock
 
     - name: Restore .NET packages and tools
       run: |

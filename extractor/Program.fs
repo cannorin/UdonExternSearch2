@@ -18,18 +18,12 @@ type VpmPackage = {
   version: string
 }
 
-type VpmManifest = {
-  locked: Map<string, VpmPackage>
-}
-
 let vrcsdk3Version =
-  let vpmManifestPath = Path.Combine(__SOURCE_DIRECTORY__, "..", "project", "Packages", "vpm-manifest.json")
-  let vpmManifest =
-    Decode.Auto.fromString<VpmManifest>(File.ReadAllText(vpmManifestPath))
-  match vpmManifest with
-  | Ok m ->
-    let package = m.locked |> Map.find "com.vrchat.worlds"
-    package.version
+  let pkgPath = Path.Combine(__SOURCE_DIRECTORY__, "..", "project", "Packages", "com.vrchat.worlds", "package.json")
+  let pkg =
+    Decode.Auto.fromString<VpmPackage>(File.ReadAllText(pkgPath))
+  match pkg with
+  | Ok p -> p.version
   | Error _ -> "unknown"
 
 [<EntryPoint>]
